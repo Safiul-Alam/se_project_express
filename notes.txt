@@ -1,0 +1,17 @@
+
+
+
+
+ "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "lint": "npx eslint ."
+  },
+  // npm run start
+
+  //hot reload
+  npm install nodemon --save-dev
+  npm run dev
+
+
+  npm install mongoose@6.6.1
