@@ -1,4 +1,6 @@
-const router = require("express").Router();
+const express = require('express');
+
+const router = express.Router();
 const { getUsers, createUsers, getUser } = require("../controllers/users");
 
 // router.get('/users', () => console.log("get users"));
