@@ -1,0 +1,13 @@
+
+GET http://localhost:3001/users
+
+###
+POST http://localhost:3001/users
+Content-Type: application/json
+
+
+
+
+
+###
+GET http://localhost:3001/items
