@@ -15,6 +15,16 @@ mongoose
 
 
 app.use(express.json());
+
+
+// Example test user ID
+app.use((req, res, next) => {
+  req.user = {
+    _id: '67414021fe3d6f70759057e4' // Use the _id of a test user
+  };
+  next();
+});
+
 // routes
 app.use('/', mainRouter);
 
