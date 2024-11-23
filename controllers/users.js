@@ -7,7 +7,7 @@ const getUsers = (req, res) => {
     .then((users) => res.send(users))
     .catch((err) => {
       console.error(err);
-      console.log(err.name);
+      // console.log(err.name);
       return res.status(500).send({ message: err.message });
     });
 };
@@ -40,7 +40,7 @@ const getUser = (req, res) => {
    .then((user) => res.status(200).send(user))
    .catch((err) => {
     console.error(err)
-    console.log(err.name);
+    // console.log(err.name);
     if(err.name === "DocumentNotFoundError") {
       return res.status(404).send({ message: "User Not Found"});
     }
