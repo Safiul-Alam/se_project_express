@@ -5,10 +5,9 @@ const router = express.Router();
 const {
   createItem,
   getItems,
-  updateItem,
   deleteItem,
   likeItem,
-  unlikeItem
+  unlikeItem,
 } = require("../controllers/clothingItems");
 
 // Create
@@ -23,13 +22,10 @@ router.get("/", getItems);
 // Delete
 router.delete("/:itemId", deleteItem);
 
-
 // LIKE ITEM
-router.put('/:itemId/likes', likeItem);
+router.put("/:itemId/likes", likeItem);
 
 // UNLIKE
-router.delete('/:itemId/likes', unlikeItem);
-
-
+router.delete("/:itemId/likes", unlikeItem);
 
 module.exports = router;

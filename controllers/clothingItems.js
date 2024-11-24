@@ -5,8 +5,6 @@ const {
   STATUS_OK,
   STATUS_BAD_REQUEST,
   STATUS_NOT_FOUND,
-  STATUS_CREATED,
-  STATUS_DEFAULT,
 } = require("../utils/constants");
 
 const getItems = (req, res) => {
