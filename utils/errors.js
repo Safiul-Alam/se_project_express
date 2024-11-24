@@ -16,8 +16,8 @@ module.exports = {
 };
 
 
-const {STATUS_OK,
-  STATUS_BAD_REQUEST, STATUS_CREATED,
+const {
+  STATUS_BAD_REQUEST, ,
   STATUS_NOT_FOUND, STATUS_DEFAULT} = require('./constants');
 
 const handleErrors = (res, err) => {
