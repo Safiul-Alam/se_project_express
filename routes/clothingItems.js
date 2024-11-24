@@ -18,7 +18,7 @@ router.post("/", createItem);
 router.get("/", getItems);
 
 // UPdate
-router.put("/:itemId", updateItem);
+// router.put("/:itemId", updateItem);
 
 // Delete
 router.delete("/:itemId", deleteItem);

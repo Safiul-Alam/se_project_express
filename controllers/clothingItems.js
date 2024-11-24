@@ -1,26 +1,20 @@
 const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
-
-const handleErrors = (res, err) => {
-  console.error(err);
-  if (err.name === "ValidationError" || err.name === "CastError") {
-    return res.status(400).send({ success: false, message: err.message });
-  }
-  if (err.name === "DocumentNotFoundError") {
-    return res.status(404).send({ success: false, message: err.message });
-  }
-  return res.status(500).send({ success: false, message: "Internal server error" });
-};
+const handleErrors = require("../utils/errors");
+const {
+  STATUS_OK,
+  STATUS_BAD_REQUEST,
+  STATUS_NOT_FOUND,
+  STATUS_CREATED,
+  STATUS_DEFAULT,
+} = require("../utils/constants");
 
 const getItems = (req, res) => {
   ClothingItem.find()
-    .then((items) => res.status(200).send(items))
+    .then((items) => res.status(STATUS_OK).send(items))
     .catch((err) => {
       // console.log(err);
-      if (err.name === "ValidationError") {
-        res.status(400).send({ message: err.message });
-      }
-      res.status(500).send({ message: "Error from getItems", err });
+      handleErrors(res, err);
     });
 };
 
@@ -32,48 +26,25 @@ const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
-      res.status(200).send({ item });
+      res.status(STATUS_OK).send({ item });
     })
     .catch((err) => {
       console.error(err);
-      if (err.name === "ValidationError") {
-        return res.status(400).send({ message: err.message });
-      }
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: err.message });
-      }
-      return res.status(500).send({ message: err.message });
+      handleErrors(res, err);
     });
 };
 
-// Create item with owner
-const createClothingItem = async (req, res) => {
-  try {
-    const ownerId = req.user._id;
-    const item = await ClothingItem.create({ ...req.body, owner: ownerId });
-    res.status(201).send({ success: true, data: item });
-  } catch (err) {
-    handleErrors(res, err);
-  }
-};
+// const updateItem = (req, res) => {
+//   const { itemId } = req.params;
+//   const { imageUrl } = req.body;
 
-
-const updateItem = (req, res) => {
-  const { itemId } = req.params;
-  const { imageUrl } = req.body;
-
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
-    .orFail()
-    .then((item) => res.status(200).send({ data: item }))
-    .catch((err) =>{
-      console.error(err);
-      // console.log(err.name);
-      res.status(500).send({ message: "Error from updateItem", err })
-    }
-
-
-    );
-};
+//   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } }, { new: true })
+//     .orFail()
+//     .then((item) => res.status(STATUS_OK).send({ data: item }))
+//     .catch((err) => {
+//       handleErrors(res, err);
+//     });
+// };
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
@@ -85,16 +56,10 @@ const deleteItem = (req, res) => {
       error.name = "DocumentNotFoundError";
       throw error;
     })
-    .then(() => res.status(200).send({ message: "Deletion successful" }))
+    .then(() => res.status(STATUS_OK).send({ message: "Deletion successful" }))
     .catch((err) => {
       console.error(err);
-      if (err.name === "CastError") {
-        return res.status(400).send({ message: err.message });
-      }
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: err.message });
-      }
-      return res.status(500).send({ message: err.message });
+      handleErrors(res, err);
     });
 };
 
@@ -102,7 +67,9 @@ const likeItem = (req, res) => {
   const { itemId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(400).send({ message: "Invalid ID format" });
+    return res
+      .status(STATUS_BAD_REQUEST)
+      .send({ message: "Invalid ID format" });
   }
 
   return ClothingItem.findByIdAndUpdate(
@@ -112,15 +79,12 @@ const likeItem = (req, res) => {
   )
     .then((item) => {
       if (!item) {
-        return res.status(404).send({ message: "Item not found" });
+        return res.status(STATUS_NOT_FOUND).send({ message: "Item not found" });
       }
-      return res.status(200).send({ data: item });
+      return res.status(STATUS_OK).send({ data: item });
     })
     .catch((err) => {
-      if (err.name === "CastError") {
-        return res.status(400).send({ message: "Item not found" });
-      }
-      return res.status(500).send({ message: "Internal server error" });
+      handleErrors(res, err);
     });
 };
 
@@ -128,7 +92,9 @@ const unlikeItem = (req, res) => {
   const { itemId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(400).send({ message: "Invalid ID format" });
+    return res
+      .status(STATUS_BAD_REQUEST)
+      .send({ message: "Invalid ID format" });
   }
 
   return ClothingItem.findByIdAndUpdate(
@@ -136,31 +102,21 @@ const unlikeItem = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .orFail(() => {
-      const error = new Error("Card ID not found");
-      error.statusCode = 404;
-      throw error;
-    })
     .then((item) => {
       if (!item) {
-        return res.status(404).send({ message: "Item not found" });
+        return res.status(STATUS_NOT_FOUND).send({ message: "Item not found" });
       }
-      return res.status(200).send({ data: item });
+      return res.status(STATUS_OK).send({ data: item });
     })
     .catch((err) => {
-      if (err.name === "CastError") {
-        return res.status(400).send({ message: "Item not found" });
-      }
-      return res.status(404).send({ message: "Internal server error" });
+      handleErrors(res, err);
     });
 };
 
 module.exports = {
   createItem,
   getItems,
-  updateItem,
   deleteItem,
   likeItem,
   unlikeItem,
-  createClothingItem
 };
