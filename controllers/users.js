@@ -1,4 +1,6 @@
 const User = require("../models/user");
+const { STATUS_OK, STATUS_DEFAULT, STATUS_CREATED, STATUS_NOT_FOUND } = require('../utils/constants');
+const {handleErrors} = require('../utils/errors');
 
 // Get /users
 const getUsers = (req, res) => {
@@ -6,9 +8,7 @@ const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
     .catch((err) => {
-      console.error(err);
-      // console.log(err.name);
-      return res.status(500).send({ message: err.message });
+      handleErrors(res, err);
     });
 };
 
@@ -17,14 +17,11 @@ const createUsers = (req, res) => {
   const { name, avatar } = req.body;
   User.create({ name, avatar })
     .then((user) => {
-      res.status(201).send(user);
+      res.status(STATUS_CREATED).send(user);
     })
     .catch((err) => {
       console.error(err);
-      if (err.name === "ValidationError") {
-        return res.status(400).send({ message: err.message });
-      }
-      return res.status(500).send({ message: err.message });
+      handleErrors(res, err);
     });
 };
 
@@ -37,17 +34,11 @@ const getUser = (req, res) => {
     error.name = "DocumentNotFoundError";
     throw error;
   })
-   .then((user) => res.status(200).send(user))
+   .then((user) => res.status(STATUS_OK).send(user))
    .catch((err) => {
     console.error(err)
     // console.log(err.name);
-    if(err.name === "DocumentNotFoundError") {
-      return res.status(404).send({ message: "User Not Found"});
-    }
-    if (err.name === "CastError") {
-      return res.status(400).send({ message: "User Not Found" });
-    }
-    return res.status(500).send({ message: "Internal Service Error" });
+    handleErrors(res, err);
    })
 }
 
