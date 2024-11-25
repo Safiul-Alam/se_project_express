@@ -1,6 +1,6 @@
 const User = require("../models/user");
 const { STATUS_OK, STATUS_CREATED, } = require('../utils/constants');
-const {handleErrors} = require('../utils/errors');
+const handleErrors = require('../utils/errors');
 
 // Get /users
 const getUsers = (req, res) => {
