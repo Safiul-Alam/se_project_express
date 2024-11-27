@@ -109,9 +109,14 @@ const createUsers = (req, res) => {
           .status(STATUS_UNAUTHORIZE)
           .send({ message: "The user already exists." });
       }
+      if (err.statusCode === CONFLICT) {
+        return res
+          .status(CONFLICT)
+          .send({ message: "The user already exists" });
+      }
 
       // Handle unexpected errors
-      res
+      return res
         .status(STATUS_DEFAULT)
         .send({ message: "Internal server error." });
     });
