@@ -1,9 +1,9 @@
 require("dotenv").config();
+const bodyParser = require("body-parser");
 const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
-
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -15,6 +15,9 @@ mongoose
     console.log("Coonected to DB");
   })
   .catch(console.error);
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 app.use(cors());
 app.use(express.json());
