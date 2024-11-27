@@ -6,7 +6,6 @@ module.exports = {
   STATUS_UNAUTHORIZE: 401,
   STATUS_DEFAULT: 500,
   CONFLICT: 409,
-
 };
 
 
