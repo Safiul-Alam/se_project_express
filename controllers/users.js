@@ -14,7 +14,7 @@ const {
   CONFLICT,
 } = require("../utils/constants");
 const handleErrors = require("../utils/errors");
-const { JWT_SECRET } = require("../utils/constants");
+const { JWT_SECRET } = require("../utils/config");
 const { get } = require("../routes");
 
 // Get /users
