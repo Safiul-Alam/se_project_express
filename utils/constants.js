@@ -5,6 +5,7 @@ module.exports = {
   STATUS_CREATED: 201,
   STATUS_UNAUTHORIZE: 401,
   STATUS_DEFAULT: 500,
+  CONFLICT: 409,
 
 };
 

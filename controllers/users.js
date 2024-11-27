@@ -10,7 +10,8 @@ const {
   STATUS_BAD_REQUEST,
   STATUS_DEFAULT,
   STATUS_NOT_FOUND,
-  STATUS_CREATED
+  STATUS_CREATED,
+  CONFLICT,
 } = require("../utils/constants");
 const handleErrors = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/constants");
