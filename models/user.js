@@ -1,17 +1,17 @@
-const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, "The avatar field is required"],
+    required: true,
     minlength: 2,
     maxlength: 30,
   },
   avatar: {
     type: String,
-    required: true,
+    required: [true, "The avatar field is required."],
     validate: {
       validator(value) {
         return validator.isURL(value);
@@ -33,9 +33,8 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 8,
+    Select: false,
     message: "Password is not strong enough",
-    select: false
   },
 });
 

@@ -1,75 +1,26 @@
 const bcrypt = require("bcryptjs");
-const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
-
 const User = require("../models/user");
-const {
-  STATUS_OK,
-  STATUS_UNAUTHORIZE,
-  STATUS_BAD_REQUEST,
-  STATUS_DEFAULT,
-  STATUS_NOT_FOUND,
-  STATUS_CREATED,
-  CONFLICT,
-} = require("../utils/constants");
-const handleErrors = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
-const { get } = require("../routes");
 
-// Get /users
-const getUsers = (req, res) => {
-  // console.log("in controller");
-  User.find({})
-    .then((users) => res.send(users))
-    .catch((err) => {
-      handleErrors(res, err);
-    });
-};
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  INTERNAL_SERVER_ERROR,
+  AUTHENTICATIONERROR,
+  CONFLICT,
+} = require("../utils/errors");
 
-// get single user by id
-const getUser = (req, res) => {
-  const { userId } = req.params;
-
-  User.findById(userId)
-    .orFail(() => {
-      const error = new Error("User ID not found");
-      error.name = "DocumentNotFoundError";
-      throw error;
-    })
-    .then((user) => res.status(STATUS_OK).send(user))
-    .catch((err) => {
-      console.error(err);
-      // console.log(err.name);
-      handleErrors(res, err);
-    });
-};
-
-// POST /users
-// const createUsers = (req, res, next) => {
-//   const { name, avatar, email, password } = req.body;
-
-//   User.create({ name, avatar, email: email.toLowerCase(), password: hash })
-//     .then((user) => {
-//       res.status(STATUS_CREATED).send(user);
-//     })
-//     .catch((err) => {
-//       console.error(err);
-//       handleErrors(res, err);
-//     });
-// };
-
-const createUsers = (req, res) => {
+const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  // Validate required fields
   if (!email || !password) {
     return res
-      .status(STATUS_BAD_REQUEST)
-      .send({ message: "The email and password fields are required." });
+      .status(BAD_REQUEST)
+      .send({ message: "The email and password fields are required" });
   }
 
-  // Check if the user already exists
   return User.findOne({ email })
     .then((user) => {
       if (user) {
@@ -88,61 +39,41 @@ const createUsers = (req, res) => {
       );
     })
     .then((user) => {
-      // Remove the password from the returned object
       const userWithoutPassword = user.toObject();
       delete userWithoutPassword.password;
-
-      // Respond with the created user
-      res.status(STATUS_CREATED).json(userWithoutPassword);
+      res.status(201).json(userWithoutPassword);
     })
     .catch((err) => {
       console.error(err);
-
-      // Handle validation errors
       if (err.name === "ValidationError") {
-        return res.status(STATUS_BAD_REQUEST).send({ message: "Invalid data provided." });
-      }
-
-      // Handle duplicate user error
-      if (err.statusCode === STATUS_UNAUTHORIZE) {
-        return res
-          .status(STATUS_UNAUTHORIZE)
-          .send({ message: "The user already exists." });
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
       if (err.statusCode === CONFLICT) {
         return res
           .status(CONFLICT)
           .send({ message: "The user already exists" });
       }
-
-      // Handle unexpected errors
       return res
-        .status(STATUS_DEFAULT)
-        .send({ message: "Internal server error." });
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "Internal Service Error" });
     });
 };
 
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  // Validate input fields
   if (!email || !password) {
     return res
-      .status(STATUS_BAD_REQUEST)
-      .send({ message: "The email and password fields are required." });
+      .status(BAD_REQUEST)
+      .send({ message: "The email and password fields are required" });
   }
 
-  // Validate email format
   if (!validator.isEmail(email)) {
-    return res
-      .status(STATUS_BAD_REQUEST)
-      .send({ message: "Invalid email format." });
+    return res.status(BAD_REQUEST).send({ message: "Invalid email format" });
   }
 
-  // Authenticate user
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
-      // Generate JWT if authentication is successful
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
@@ -151,15 +82,13 @@ const login = (req, res) => {
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
         return res
-          .status(STATUS_UNAUTHORIZE)
-          .send({ message: "Incorrect email or password." });
+          .status(AUTHENTICATIONERROR)
+          .send({ message: "Incorrect email or password" });
       }
 
-      // Handle unexpected errors
-      console.error("Login error:", err); // Log the error for debugging
       return res
-        .status(STATUS_DEFAULT)
-        .send({ message: "Internal server error." });
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "Internal server error" });
     });
 };
 
@@ -178,16 +107,16 @@ const getCurrentUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        return res.status(STATUS_NOT_FOUND).send({ message: "User not found" });
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       }
       if (err.name === "CastError") {
         return res
-          .status(STATUS_BAD_REQUEST)
+          .status(BAD_REQUEST)
           .send({ message: "User ID is not in valid format" });
       }
       console.error(err);
       return res
-        .status(STATUS_DEFAULT)
+        .status(INTERNAL_SERVER_ERROR)
         .send({ message: "Internal server error" });
     });
 };
@@ -204,22 +133,15 @@ const updateProfile = (req, res) => {
     .then((user) => res.send({ name: user.name, avatar: user.avatar }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(STATUS_BAD_REQUEST).send({ message: "Invalid user" });
+        return res.status(BAD_REQUEST).send({ message: "Invalid user" });
       }
       if (err.name === "DocumentNotFoundError") {
-        return res.status(STATUS_NOT_FOUND).send({ message: "User not found" });
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       }
       return res
-        .status(STATUS_DEFAULT)
+        .status(INTERNAL_SERVER_ERROR)
         .send({ message: "Internal server error" });
     });
 };
 
-module.exports = {
-  getUsers,
-  getUser,
-  createUsers,
-  login,
-  getCurrentUser,
-  updateProfile,
-};
+module.exports = { createUser, getCurrentUser, updateProfile, login };

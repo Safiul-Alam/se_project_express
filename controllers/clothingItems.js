@@ -1,113 +1,115 @@
-const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
-const handleErrors = require("../utils/errors");
-const {
-  STATUS_OK,
-  STATUS_BAD_REQUEST,
-  STATUS_NOT_FOUND,
-} = require("../utils/constants");
 
-const getItems = (req, res) => {
-  ClothingItem.find()
-    .then((items) => res.status(STATUS_OK).send(items))
-    .catch((err) => {
-      // console.log(err);
-      handleErrors(res, err);
-    });
-};
+const {
+  BAD_REQUEST,
+  INTERNAL_SERVER_ERROR,
+  NOT_FOUND,
+  FORBIDDEN,
+} = require("../utils/errors");
 
 const createItem = (req, res) => {
-  // console.log(req);
-  // console.log(req.body);
-  // console.log(req.user._id);
-
+  const owner = req.user._id;
   const { name, weather, imageUrl } = req.body;
-  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
-    .then((item) => {
-      res.status(STATUS_OK).send({ item });
-    })
+
+  ClothingItem.create({ name, weather, imageUrl, owner })
+    .then((item) => res.status(201).send({ data: item }))
     .catch((err) => {
       console.error(err);
-      handleErrors(res, err);
+
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
-// const updateItem = (req, res) => {
-//   const { itemId } = req.params;
-//   const { imageUrl } = req.body;
-
-//   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } }, { new: true })
-//     .orFail()
-//     .then((item) => res.status(STATUS_OK).send({ data: item }))
-//     .catch((err) => {
-//       handleErrors(res, err);
-//     });
-// };
+const getItems = (req, res) => {
+  ClothingItem.find({})
+    .then((items) => res.status(200).send(items))
+    .catch((err) => {
+      console.error(err);
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server " });
+    });
+};
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
-  // console.log(itemId);
-  ClothingItem.findByIdAndDelete(itemId)
-    .orFail(() => {
-      const error = new Error("User ID not found");
-      error.name = "DocumentNotFoundError";
-      throw error;
+  ClothingItem.findById(itemId)
+    .orFail()
+    .then((item) => {
+      if (String(item.owner) !== req.user._id) {
+        return res
+          .status(FORBIDDEN)
+          .send({ message: "Access to the resource is forbidden" });
+      }
+      return item
+        .deleteOne()
+        .then(() =>
+          res.status(200).send({ message: "Item deleted successfully" })
+        );
     })
-    .then(() => res.status(STATUS_OK).send({ message: "Deletion successful" }))
     .catch((err) => {
-      console.error(err);
-      handleErrors(res, err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server " });
     });
 };
 
 const likeItem = (req, res) => {
-  const { itemId } = req.params;
+  console.log(req.params.itemId);
 
-  if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res
-      .status(STATUS_BAD_REQUEST)
-      .send({ message: "Invalid ID format" });
-  }
-
-  return ClothingItem.findByIdAndUpdate(
+  ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
-  ).orFail()
-    .then((item) => {
-      if (!item) {
-        return res.status(STATUS_NOT_FOUND).send({ message: "Item not found" });
-      }
-      return res.status(STATUS_OK).send({ data: item });
-    })
+  )
+    .orFail()
+    .then((item) => res.status(200).send(item))
     .catch((err) => {
-      handleErrors(res, err);
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server " });
     });
 };
 
 const unlikeItem = (req, res) => {
-  const { itemId } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res
-      .status(STATUS_BAD_REQUEST)
-      .send({ message: "Invalid ID format" });
-  }
-
-  return ClothingItem.findByIdAndUpdate(
+  ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .then((item) => {
-      if (!item) {
-        return res.status(STATUS_NOT_FOUND).send({ message: "Item not found" });
-      }
-      return res.status(STATUS_OK).send({ data: item });
-    })
+    .orFail()
+    .then((item) => res.status(200).send(item))
     .catch((err) => {
-      handleErrors(res, err);
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server " });
     });
 };
 
