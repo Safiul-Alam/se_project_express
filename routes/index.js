@@ -10,7 +10,7 @@ const {auth} = require('../middleware/auth');
 
 router.use("/items", itemRouter);
 router.post("/signin", login);
-router.post("/signup", auth, createUsers);
+router.post("/signup", createUsers);
 
 router.use("/users", userRouter);
 

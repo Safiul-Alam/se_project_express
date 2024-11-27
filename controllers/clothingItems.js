@@ -74,7 +74,7 @@ const likeItem = (req, res) => {
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
-  )
+  ).orFail()
     .then((item) => {
       if (!item) {
         return res.status(STATUS_NOT_FOUND).send({ message: "Item not found" });
