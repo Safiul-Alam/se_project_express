@@ -69,25 +69,22 @@ const createUsers = (req, res) => {
   }
 
   // Check if the user already exists
-  User.findOne({ email })
+  return User.findOne({ email })
     .then((user) => {
       if (user) {
         const error = new Error("The user already exists");
-        error.statusCode = STATUS_UNAUTHORIZE;
+        error.statusCode = CONFLICT;
         throw error;
       }
 
-      // Hash the password
-      return bcrypt.hash(password, 10);
-    })
-    .then((hash) => {
-      // Create the user with the hashed password
-      User.create({
-        name,
-        avatar,
-        email,
-        password: hash,
-      });
+      return bcrypt.hash(password, 10).then((hash) =>
+        User.create({
+          name,
+          avatar,
+          email,
+          password: hash,
+        })
+      );
     })
     .then((user) => {
       // Remove the password from the returned object
