@@ -7,33 +7,29 @@ const mainRouter = require("./routes/index");
 
 const app = express();
 const { PORT = 3001 } = process.env;
-// mongoose.connect(process.env.DATABASE_URL);
-mongoose
-  .connect(process.env.DATABASE_URL)
-  .then(() => {
-    // eslint-disable-next-line no-console
-    console.log("Coonected to DB");
-  })
-  .catch(console.error);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
 app.use(cors());
 app.use(express.json());
 
-// Example test user ID
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: '67414021fe3d6f70759057e4' // Use the _id of a test user
-//   };
-//   next();
-// });
+mongoose
+  .connect("mongodb://127.0.0.1:27017/wtwr_db")
+  .then(() => {
+    // eslint-disable-next-line no-console
+    console.log("Connected to DB");
+    app.listen(PORT, () => {
+      // eslint-disable-next-line no-console
+      console.log(`App is listening at port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Error connecting to the database", error);
+  });
+
+
 
 // routes
 app.use("/", mainRouter);
 
-app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Server is running on port ${PORT}`);
-});
+
