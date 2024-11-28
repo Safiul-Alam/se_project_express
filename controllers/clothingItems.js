@@ -7,10 +7,13 @@ const {
   FORBIDDEN,
 } = require("../utils/errors");
 
-
 const createItem = (req, res) => {
   const owner = req.user._id;
   const { name, weather, imageUrl } = req.body;
+
+  if (!name || !weather || !imageUrl) {
+    return res.status(BAD_REQUEST).send({ message: "Missing required fields" });
+  }
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(201).send({ data: item }))
@@ -34,7 +37,7 @@ const getItems = (req, res) => {
       console.error(err);
       return res
         .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server " });
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -69,32 +72,24 @@ const deleteItem = (req, res) => {
 };
 
 const likeItem = (req, res) => {
-  console.log(req.params.itemId);
-
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
     .orFail()
-    .then((item) => {
-      console.log("Status: 200");
-      res.status(200).send(item);
-    })
+    .then((item) => res.status(200).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        console.log("Status: 404");
-        return res.status(NOT_FOUND).send({ message: err.message });
+        return res.status(404).send({ message: "Item not found" });
       }
       if (err.name === "CastError") {
-        console.log("Status: 400");
-        return res.status(BAD_REQUEST).send({ message: err.message });
+        return res.status(400).send({ message: "Invalid item ID format" });
       }
-      console.log("Status: 500");
       return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error occurred on the server" });
+        .status(500)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
