@@ -6,6 +6,7 @@ const {
   NOT_FOUND,
   FORBIDDEN,
 } = require("../utils/errors");
+const handleErrors = require("../utils/errors");
 
 const createItem = (req, res) => {
   const owner = req.user._id;
