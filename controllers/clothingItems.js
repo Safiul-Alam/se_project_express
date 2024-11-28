@@ -6,10 +6,10 @@ const {
   NOT_FOUND,
   FORBIDDEN,
 } = require("../utils/errors");
-const handleErrors = require("../utils/errors");
+
 
 const createItem = (req, res) => {
-  const owner = req.user._id;
+  const owner = req?.user?._id;
   const { name, weather, imageUrl } = req.body;
 
   if (!name || !weather || !imageUrl) {
@@ -48,7 +48,7 @@ const deleteItem = (req, res) => {
   ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
-      if (String(item.owner) !== req.user._id) {
+      if (String(item.owner) !== req?.user?._id) {
         return res
           .status(FORBIDDEN)
           .send({ message: "Access to the resource is forbidden" });
@@ -75,7 +75,7 @@ const deleteItem = (req, res) => {
 const likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: req?.user?._id } },
     { new: true }
   )
     .orFail()
@@ -97,7 +97,7 @@ const likeItem = (req, res) => {
 const unlikeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: req?.user?._id } },
     { new: true }
   )
     .orFail()

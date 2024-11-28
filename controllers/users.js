@@ -94,7 +94,7 @@ const login = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  const id = req.user._id;
+  const id = req?.user?._id;
   User.findById(id)
     .orFail()
     .then((user) => {
@@ -126,7 +126,7 @@ const updateProfile = (req, res) => {
   const { name, avatar } = req.body;
 
   return User.findByIdAndUpdate(
-    req.user._id,
+    req?.user?._id,
     { name, avatar },
     { new: true, runValidators: true }
   )
