@@ -7,6 +7,7 @@ const {
   FORBIDDEN,
 } = require("../utils/errors");
 
+
 const createItem = (req, res) => {
   const owner = req.user._id;
   const { name, weather, imageUrl } = req.body;
@@ -76,18 +77,24 @@ const likeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then((item) => res.status(200).send(item))
+    .then((item) => {
+      console.log("Status: 200");
+      res.status(200).send(item);
+    })
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
+        console.log("Status: 404");
         return res.status(NOT_FOUND).send({ message: err.message });
       }
       if (err.name === "CastError") {
+        console.log("Status: 400");
         return res.status(BAD_REQUEST).send({ message: err.message });
       }
+      console.log("Status: 500");
       return res
         .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server " });
+        .send({ message: "An error occurred on the server" });
     });
 };
 
