@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'super-strong-secret'; // Use env variable for security
+
 module.exports.register = (req, res) => {
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
@@ -16,7 +18,10 @@ module.exports.register = (req, res) => {
       });
     })
     .catch((err) => {
-      res.status(400).send(err);
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({ message: 'Invalid registration data' });
+      }
+      return res.status(500).send({ message: 'Internal server error' });
     });
 };
 
@@ -26,10 +31,10 @@ module.exports.login = (req, res) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({
-        token: jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' }),
+        token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' }),
       });
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
+    .catch(() => {
+      res.status(401).send({ message: 'Incorrect email or password' });
     });
 };
