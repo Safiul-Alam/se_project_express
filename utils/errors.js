@@ -16,11 +16,21 @@ module.exports = {
 
 const handleErrors = (res, err) => {
   console.error(err);
+  // eslint-disable-next-line no-console
+  console.log("Error Name:", err.name);
   if (err.name === "DocumentNotFoundError") {
     return res.status(NOT_FOUND).send({ message: err.message });
   }
   if (err.name === "CastError") {
     return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+  }
+  if (err.message === "Incorrect email or password") {
+    return res
+      .status(AUTHENTICATIONERROR)
+      .send({ message: "Incorrect email or password" });
+  }
+  if (err.name === "ValidationError") {
+    return res.status(BAD_REQUEST).send({ message: "Invalid user" });
   }
   return res
     .status(INTERNAL_SERVER_ERROR)

@@ -4,6 +4,7 @@ const validator = require("validator");
 
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
+const handleErrors = require('../utils/errors');
 
 const {
   BAD_REQUEST,
@@ -45,18 +46,7 @@ const createUser = (req, res) => {
       res.status(201).json(userWithoutPassword);
     })
     .catch((err) => {
-      console.error(err);
-      if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
-      }
-      if (err.statusCode === CONFLICT) {
-        return res
-          .status(CONFLICT)
-          .send({ message: "The user already exists" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Internal Service Error" });
+     handleErrors(res, err);
     });
 };
 
@@ -81,19 +71,12 @@ const login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      if (err.message === "Incorrect email or password") {
-        return res
-          .status(AUTHENTICATIONERROR)
-          .send({ message: "Incorrect email or password" });
-      }
-
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Internal server error" });
+      handleErrors(res, err);
     });
 };
 
 const getCurrentUser = (req, res) => {
+  //optional chaining is a great way to handle cases where req.user might be undefined.
   const id = req?.user?._id;
   User.findById(id)
     .orFail()
@@ -133,15 +116,7 @@ const updateProfile = (req, res) => {
     .orFail()
     .then((user) => res.send({ name: user.name, avatar: user.avatar }))
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid user" });
-      }
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Internal server error" });
+     handleErrors(res, err);
     });
 };
 
