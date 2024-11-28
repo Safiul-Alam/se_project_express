@@ -10,7 +10,7 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
-  AUTHENTICATIONERROR,
+  
   CONFLICT,
 } = require("../utils/errors");
 
@@ -76,7 +76,7 @@ const login = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  //optional chaining is a great way to handle cases where req.user might be undefined.
+  // optional chaining is a great way to handle cases where req.user might be undefined.
   const id = req?.user?._id;
   User.findById(id)
     .orFail()

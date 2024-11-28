@@ -8,7 +8,8 @@ const {
 } = require("../utils/errors");
 
 
-const createItem = (req, res) => {
+
+const createItem = async (req, res) => {
   const owner = req?.user?._id;
   const { name, weather, imageUrl } = req.body;
 
@@ -16,20 +17,22 @@ const createItem = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "Missing required fields" });
   }
 
-  ClothingItem.create({ name, weather, imageUrl, owner })
-    .then((item) => res.status(201).send({ data: item }))
-    .catch((err) => {
-      console.error(err);
+  try {
+    const item = await ClothingItem.create({ name, weather, imageUrl, owner });
+    return res.status(201).send({ data: item });
+  } catch (err) {
+    console.error(err);
 
-      if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
-      }
+    if (err.name === "ValidationError") {
+      return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+    }
 
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
+    return res
+      .status(INTERNAL_SERVER_ERROR)
+      .send({ message: "An error has occurred on the server" });
+  }
 };
+
 
 const getItems = (req, res) => {
   ClothingItem.find({})

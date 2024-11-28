@@ -1,7 +1,7 @@
 const BAD_REQUEST = 400;
 const NOT_FOUND = 404;
 const INTERNAL_SERVER_ERROR = 500;
-const AUTHENTICATIONERROR = 401;
+const AUTHENTICATION_ERROR = 401;
 const FORBIDDEN = 403;
 const CONFLICT = 409;
 
@@ -9,7 +9,7 @@ module.exports = {
   BAD_REQUEST,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
-  AUTHENTICATIONERROR,
+  AUTHENTICATION_ERROR,
   FORBIDDEN,
   CONFLICT,
 };
@@ -26,7 +26,7 @@ const handleErrors = (res, err) => {
   }
   if (err.message === "Incorrect email or password") {
     return res
-      .status(AUTHENTICATIONERROR)
+      .status(AUTHENTICATION_ERROR)
       .send({ message: "Incorrect email or password" });
   }
   if (err.name === "ValidationError") {
