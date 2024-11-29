@@ -5,15 +5,6 @@ const AUTHENTICATION_ERROR = 401;
 const FORBIDDEN = 403;
 const CONFLICT = 409;
 
-module.exports = {
-  BAD_REQUEST,
-  NOT_FOUND,
-  INTERNAL_SERVER_ERROR,
-  AUTHENTICATION_ERROR,
-  FORBIDDEN,
-  CONFLICT,
-};
-
 const handleErrors = (res, err) => {
   console.error(err);
   // eslint-disable-next-line no-console
@@ -32,9 +23,21 @@ const handleErrors = (res, err) => {
   if (err.name === "ValidationError") {
     return res.status(BAD_REQUEST).send({ message: "Invalid user" });
   }
+  if (err.message === "The user already exists") {
+    // MongoDB duplicate key error code
+    return res.status(409).send({ message: "Email already registered" });
+  }
   return res
     .status(INTERNAL_SERVER_ERROR)
     .send({ message: "An error has occurred on the server " });
 };
 
-module.exports = handleErrors;
+module.exports = {
+  BAD_REQUEST,
+  NOT_FOUND,
+  INTERNAL_SERVER_ERROR,
+  AUTHENTICATION_ERROR,
+  FORBIDDEN,
+  CONFLICT,
+  handleErrors,
+};

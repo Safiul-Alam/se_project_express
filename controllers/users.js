@@ -4,13 +4,13 @@ const validator = require("validator");
 
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
-const handleErrors = require('../utils/errors');
+const { handleErrors } = require("../utils/errors");
 
 const {
   BAD_REQUEST,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
-  
+
   CONFLICT,
 } = require("../utils/errors");
 
@@ -46,7 +46,7 @@ const createUser = (req, res) => {
       res.status(201).json(userWithoutPassword);
     })
     .catch((err) => {
-     handleErrors(res, err);
+      handleErrors(res, err);
     });
 };
 
@@ -116,7 +116,7 @@ const updateProfile = (req, res) => {
     .orFail()
     .then((user) => res.send({ name: user.name, avatar: user.avatar }))
     .catch((err) => {
-     handleErrors(res, err);
+      handleErrors(res, err);
     });
 };
 
