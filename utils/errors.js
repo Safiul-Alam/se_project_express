@@ -24,7 +24,7 @@ const handleErrors = (res, err) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid user" });
   }
   if (err.message === "The user already exists") {
-    return res.status(409).send({ message: "Email already registered" });
+    return res.status(CONFLICT).send({ message: "Email already registered" });
   }
   return res
     .status(INTERNAL_SERVER_ERROR)
