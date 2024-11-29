@@ -24,7 +24,6 @@ const handleErrors = (res, err) => {
     return res.status(BAD_REQUEST).send({ message: "Invalid user" });
   }
   if (err.message === "The user already exists") {
-    // MongoDB duplicate key error code
     return res.status(409).send({ message: "Email already registered" });
   }
   return res
