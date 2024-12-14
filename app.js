@@ -1,6 +1,7 @@
 require("dotenv").config();
 const bodyParser = require("body-parser");
 const cors = require("cors");
+
 const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
@@ -8,7 +9,7 @@ const mainRouter = require("./routes/index");
 const app = express();
 const { PORT = 3001 } = process.env;
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
@@ -27,9 +28,5 @@ mongoose
     console.error("Error connecting to the database", error);
   });
 
-
-
 // routes
 app.use("/", mainRouter);
-
-
