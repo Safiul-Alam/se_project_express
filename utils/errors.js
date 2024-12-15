@@ -9,6 +9,7 @@ const handleErrors = (res, err) => {
   console.error(err);
   // eslint-disable-next-line no-console
   console.log("Error Name:", err.name);
+  
   if (err.name === "DocumentNotFoundError") {
     return res.status(NOT_FOUND).send({ message: err.message });
   }

@@ -3,11 +3,9 @@ const ClothingItem = require("../models/clothingItem");
 const {
   BAD_REQUEST,
   INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
   FORBIDDEN,
 } = require("../utils/errors");
-
-
+const { handleErrors } = require("../utils/errors");
 
 const createItem = async (req, res) => {
   const owner = req?.user?._id;
@@ -32,7 +30,6 @@ const createItem = async (req, res) => {
       .send({ message: "An error has occurred on the server" });
   }
 };
-
 
 const getItems = (req, res) => {
   ClothingItem.find({})
@@ -63,15 +60,7 @@ const deleteItem = (req, res) => {
         );
     })
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
-      }
-      if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server " });
+      handleErrors(res, err);
     });
 };
 
@@ -84,16 +73,7 @@ const likeItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: "Item not found" });
-      }
-      if (err.name === "CastError") {
-        return res.status(400).send({ message: "Invalid item ID format" });
-      }
-      return res
-        .status(500)
-        .send({ message: "An error has occurred on the server" });
+      handleErrors(res, err);
     });
 };
 
@@ -106,16 +86,7 @@ const unlikeItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
-      }
-      if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server " });
+      handleErrors(res, err);
     });
 };
 
