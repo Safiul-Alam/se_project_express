@@ -6,6 +6,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
 
+const { errorHandler, errorSender } = require("./middlewares/error-handler");
+
 const app = express();
 const { PORT = 3001 } = process.env;
 
@@ -30,3 +32,5 @@ mongoose
 
 // routes
 app.use("/", mainRouter);
+
+app.use(errorHandler, errorSender);

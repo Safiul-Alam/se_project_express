@@ -1,5 +1,5 @@
 const BadRequestError = require("../errors/bad-request");
-const DuplicateItemError = require("../errors/duplicate-item");
+const ConflictError = require("../errors/duplicate-item");
 const SignInFailError = require("../errors/signin-fail");
 const ForbiddenError = require("../errors/forbidden");
 const {
@@ -16,7 +16,7 @@ const errorHandler = (err, req, res, next) => {
   console.error(err);
 
   if (err.code === 11000)
-    throw new DuplicateItemError(duplicateEmailErrorMessage);
+    throw new ConflictError(duplicateEmailErrorMessage);
 
   switch (err.name) {
     case "CastError":
