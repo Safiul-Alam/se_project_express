@@ -1,6 +1,8 @@
 require("dotenv").config();
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const { errors } = require('celebrate');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -34,3 +36,7 @@ mongoose
 app.use("/", mainRouter);
 
 app.use(errorHandler, errorSender);
+
+// celebrate error handler
+app.use(errors());
+app.use(requestLogger);
