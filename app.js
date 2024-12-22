@@ -33,6 +33,14 @@ mongoose
     console.error("Error connecting to the database", error);
   });
 
+// Don’t forget to remove this code after passing the review.
+  app.get('/crash-test', () => {
+    setTimeout(() => {
+      throw new Error('Server will crash now');
+    }, 0);
+  });
+
+
 // routes
 app.use("/", mainRouter);
 

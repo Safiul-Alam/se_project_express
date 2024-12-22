@@ -13,3 +13,9 @@ The project aims to enhance your understanding of databases, security, and web a
 - JWT Authentication: Secure user authentication.
 - Validator Library: Validate URLs and data.
 - ESLint & Prettier: Maintain code quality and formatting.
+
+
+# This is frontend domain address
+wtwr.macao.net
+www.wtwr.macao.
+api.wtwr.macao.net
