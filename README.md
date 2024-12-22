@@ -3,6 +3,7 @@
 The WTWR backend project is focused on creating a robust server for the WTWR application. 
 It provides APIs for managing clothing items and user authentication. 
 The project aims to enhance your understanding of databases, security, and web application deployment.
+The project uses an SSL certificate
 
 
 
