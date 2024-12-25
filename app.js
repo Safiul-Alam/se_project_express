@@ -4,12 +4,9 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const { errors } = require("celebrate");
-const { requestLogger } = require("./middlewares/logger");
-require("dotenv").config();
-
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 const mainRouter = require("./routes/index");
-
-const { errorHandler, errorSender } = require("./middlewares/error-handler");
+const { errorHandler } = require("./middlewares/error-handler");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -17,15 +14,15 @@ const { PORT = 3001 } = process.env;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
+app.use(requestLogger); // Request Logger goes here
 app.use(express.json());
 
+// Connect to MongoDB
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
-    // eslint-disable-next-line no-console
     console.log("Connected to DB");
     app.listen(PORT, () => {
-      // eslint-disable-next-line no-console
       console.log(`App is listening at port ${PORT}`);
     });
   })
@@ -33,16 +30,19 @@ mongoose
     console.error("Error connecting to the database", error);
   });
 
-app.use(errorHandler, errorSender);
-app.use(requestLogger);
-app.use(errors()); // celebrate error handler
+// Routes
+app.use("/", mainRouter);
 
-// Don’t forget to remove this code after passing the review.
+// Error Logging and Handling
+app.use(errorLogger); // Error Logger here
+app.use(errors()); // Celebrate error handler
+app.use(errorHandler); // Main error handler
+
+// Crash-test route (temporary)
 app.get("/crash-test", () => {
   setTimeout(() => {
     throw new Error("Server will crash now");
   }, 0);
 });
 
-// routes
-app.use("/", mainRouter);
+module.exports = app;
