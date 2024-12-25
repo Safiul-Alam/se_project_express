@@ -1,12 +1,12 @@
 require("dotenv").config();
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const { errors } = require('celebrate');
-const { requestLogger, errorLogger } = require('./middlewares/logger');
-require('dotenv').config();
-
 const express = require("express");
 const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const { errors } = require("celebrate");
+const { requestLogger } = require("./middlewares/logger");
+require("dotenv").config();
+
 const mainRouter = require("./routes/index");
 
 const { errorHandler, errorSender } = require("./middlewares/error-handler");
@@ -33,19 +33,16 @@ mongoose
     console.error("Error connecting to the database", error);
   });
 
-// Don’t forget to remove this code after passing the review.
-  app.get('/crash-test', () => {
-    setTimeout(() => {
-      throw new Error('Server will crash now');
-    }, 0);
-  });
+app.use(errorHandler, errorSender);
+app.use(requestLogger);
+app.use(errors()); // celebrate error handler
 
+// Don’t forget to remove this code after passing the review.
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
 
 // routes
 app.use("/", mainRouter);
-
-app.use(errorHandler, errorSender);
-
-// celebrate error handler
-app.use(errors());
-app.use(requestLogger);

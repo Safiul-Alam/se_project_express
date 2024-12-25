@@ -6,29 +6,22 @@ const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 const { handleErrors } = require("../utils/errors");
 
-const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  INTERNAL_SERVER_ERROR,
-
-  CONFLICT,
-} = require("../utils/errors");
+const NotFoundError = require("../errors/not-found");
+const BadRequestError = require("../errors/bad-request");
+const ConflictError = require("../errors/duplicate-item");
+const ServerError = require("../errors/server_error");
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   if (!email || !password) {
-    return res
-      .status(BAD_REQUEST)
-      .send({ message: "The email and password fields are required" });
+    throw new BadRequestError("The email and password fields are required");
   }
 
   return User.findOne({ email })
     .then((user) => {
       if (user) {
-        const error = new Error("The user already exists");
-        error.statusCode = CONFLICT;
-        throw error;
+        throw new ConflictError("The user already exists");
       }
 
       return bcrypt.hash(password, 10).then((hash) =>
@@ -54,13 +47,11 @@ const login = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res
-      .status(BAD_REQUEST)
-      .send({ message: "The email and password fields are required" });
+    throw new BadRequestError("The email and password fields are required");
   }
 
   if (!validator.isEmail(email)) {
-    return res.status(BAD_REQUEST).send({ message: "Invalid email format" });
+    throw new BadRequestError("The email and password fields are required");
   }
 
   return User.findUserByCredentials(email, password)
@@ -91,17 +82,14 @@ const getCurrentUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
+        throw new NotFoundError("User not found");
       }
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "User ID is not in valid format" });
+        throw new BadRequestError("The email and password fields are required");
       }
       console.error(err);
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Internal server error" });
+
+      throw new ServerError("Server not found");
     });
 };
 

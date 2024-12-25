@@ -1,6 +1,6 @@
 const BadRequestError = require("../errors/bad-request");
 const ConflictError = require("../errors/duplicate-item");
-const SignInFailError = require("../errors/signin-fail");
+const AuthenticationError = require("../errors/authentication-error");
 const ForbiddenError = require("../errors/forbidden");
 const {
   castErrorMessage,
@@ -24,9 +24,9 @@ const errorHandler = (err, req, res, next) => {
     case "ValidationError":
       throw new BadRequestError(validationErrorMessage);
     case "SignInFail":
-      throw new SignInFailError(signinFailErrorMessage);
+      throw new AuthenticationError(signinFailErrorMessage);
     case "Unauthorized":
-      throw new SignInFailError(badTokenErrorMessage);
+      throw new AuthenticationError(badTokenErrorMessage);
     case "Forbidden":
       throw new ForbiddenError(forbiddenErrorMessage);
     default:

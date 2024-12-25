@@ -1,18 +1,18 @@
-const ClothingItem = require("../models/clothingItem");
+const BadRequestError = require("../errors/bad-request");
+const NotFoundError = require("../errors/not-found");
+const ForbiddenError = require("../errors/forbidden");
+const ServerError = require("../errors/server_error");
 
-const {
-  BAD_REQUEST,
-  INTERNAL_SERVER_ERROR,
-  FORBIDDEN,
-} = require("../utils/errors");
-const { handleErrors } = require("../utils/errors");
+const errorHandler = require('../middlewares/error-handler');
+
+const ClothingItem = require("../models/clothingItem");
 
 const createItem = async (req, res) => {
   const owner = req?.user?._id;
   const { name, weather, imageUrl } = req.body;
 
   if (!name || !weather || !imageUrl) {
-    return res.status(BAD_REQUEST).send({ message: "Missing required fields" });
+    throw new BadRequestError("Missing required fields");
   }
 
   try {
@@ -22,12 +22,9 @@ const createItem = async (req, res) => {
     console.error(err);
 
     if (err.name === "ValidationError") {
-      return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      throw new BadRequestError("Invalid data");
     }
-
-    return res
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ message: "An error has occurred on the server" });
+    throw new ServerError("An error has occurred on the server");
   }
 };
 
@@ -36,9 +33,7 @@ const getItems = (req, res) => {
     .then((items) => res.status(200).send(items))
     .catch((err) => {
       console.error(err);
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
+      throw new BadRequestError("An error has occurred on the server");
     });
 };
 
@@ -49,9 +44,7 @@ const deleteItem = (req, res) => {
     .orFail()
     .then((item) => {
       if (String(item.owner) !== req?.user?._id) {
-        return res
-          .status(FORBIDDEN)
-          .send({ message: "Access to the resource is forbidden" });
+        throw new ForbiddenError("Access to the resource is forbidden");
       }
       return item
         .deleteOne()
@@ -60,11 +53,11 @@ const deleteItem = (req, res) => {
         );
     })
     .catch((err) => {
-      handleErrors(res, err);
+      errorHandler(res, err);
     });
 };
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req?.user?._id } },
@@ -73,11 +66,17 @@ const likeItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      handleErrors(res, err);
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Item not found"));
+      }
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid item ID"));
+      }
+      return next(err);
     });
 };
 
-const unlikeItem = (req, res) => {
+const unlikeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req?.user?._id } },
@@ -86,7 +85,13 @@ const unlikeItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      handleErrors(res, err);
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Item not found"));
+      }
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid item ID"));
+      }
+      return next(err);
     });
 };
 
