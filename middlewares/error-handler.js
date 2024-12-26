@@ -15,22 +15,23 @@ const {
 const errorHandler = (err, req, res, next) => {
   console.error(err);
 
-  if (err.code === 11000)
-    throw new ConflictError(duplicateEmailErrorMessage);
+  if (err.code === 11000) {
+    return next(new ConflictError(duplicateEmailErrorMessage));
+  }
 
   switch (err.name) {
     case "CastError":
-      throw new BadRequestError(castErrorMessage);
+      return next(new BadRequestError(castErrorMessage));
     case "ValidationError":
-      throw new BadRequestError(validationErrorMessage);
+      return next(new BadRequestError(validationErrorMessage));
     case "SignInFail":
-      throw new AuthenticationError(signinFailErrorMessage);
+      return next(new AuthenticationError(signinFailErrorMessage));
     case "Unauthorized":
-      throw new AuthenticationError(badTokenErrorMessage);
+      return next(new AuthenticationError(badTokenErrorMessage));
     case "Forbidden":
-      throw new ForbiddenError(forbiddenErrorMessage);
+      return next(new ForbiddenError(forbiddenErrorMessage));
     default:
-      next(err);
+      return res.status(500).send({ message: 'Server error occurred' });
   }
 };
 

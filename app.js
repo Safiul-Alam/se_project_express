@@ -6,7 +6,7 @@ const cors = require("cors");
 const { errors } = require("celebrate");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 const mainRouter = require("./routes/index");
-const { errorHandler } = require("./middlewares/error-handler");
+const { errorHandler, errorSender } = require("./middlewares/error-handler");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -30,19 +30,21 @@ mongoose
     console.error("Error connecting to the database", error);
   });
 
+  // Crash-test route (temporary)
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
+
 // Routes
 app.use("/", mainRouter);
 
 // Error Logging and Handling
 app.use(errorLogger); // Error Logger here
 app.use(errors()); // Celebrate error handler
-app.use(errorHandler); // Main error handler
+app.use(errorSender); // Main error handler
 
-// Crash-test route (temporary)
-app.get("/crash-test", () => {
-  setTimeout(() => {
-    throw new Error("Server will crash now");
-  }, 0);
-});
+
 
 module.exports = app;

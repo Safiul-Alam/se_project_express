@@ -3,41 +3,36 @@ const NotFoundError = require("../errors/not-found");
 const ForbiddenError = require("../errors/forbidden");
 const ServerError = require("../errors/server_error");
 
-const errorHandler = require('../middlewares/error-handler');
+const errorHandler = require("../middlewares/error-handler");
 
 const ClothingItem = require("../models/clothingItem");
 
-const createItem = async (req, res) => {
-  const owner = req?.user?._id;
-  const { name, weather, imageUrl } = req.body;
-
-  if (!name || !weather || !imageUrl) {
-    throw new BadRequestError("Missing required fields");
-  }
-
+const createItem = async (req, res, next) => {
   try {
+    const owner = req?.user?._id;
+    const { name, weather, imageUrl } = req.body;
+
+    if (!name || !weather || !imageUrl) {
+      throw new BadRequestError("Missing required fields");
+    }
+
     const item = await ClothingItem.create({ name, weather, imageUrl, owner });
     return res.status(201).send({ data: item });
   } catch (err) {
-    console.error(err);
-
-    if (err.name === "ValidationError") {
-      throw new BadRequestError("Invalid data");
-    }
-    throw new ServerError("An error has occurred on the server");
+    next(err);
   }
 };
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
       console.error(err);
-      throw new BadRequestError("An error has occurred on the server");
+      next(err);
     });
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findById(itemId)
@@ -53,7 +48,7 @@ const deleteItem = (req, res) => {
         );
     })
     .catch((err) => {
-      errorHandler(res, err);
+      next(err); // Pass the error to the centralized handler
     });
 };
 
@@ -63,16 +58,9 @@ const likeItem = (req, res, next) => {
     { $addToSet: { likes: req?.user?._id } },
     { new: true }
   )
-    .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
-        return next(new NotFoundError("Item not found"));
-      }
-      if (err.name === "CastError") {
-        return next(new BadRequestError("Invalid item ID"));
-      }
-      return next(err);
+      next(err); // Pass the error to the centralized handler
     });
 };
 
@@ -85,13 +73,7 @@ const unlikeItem = (req, res, next) => {
     .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
-        return next(new NotFoundError("Item not found"));
-      }
-      if (err.name === "CastError") {
-        return next(new BadRequestError("Invalid item ID"));
-      }
-      return next(err);
+      next(err);
     });
 };
 
