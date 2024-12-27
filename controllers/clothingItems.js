@@ -1,9 +1,6 @@
 const BadRequestError = require("../errors/bad-request");
-const NotFoundError = require("../errors/not-found");
 const ForbiddenError = require("../errors/forbidden");
-const ServerError = require("../errors/server_error");
-
-const errorHandler = require("../middlewares/error-handler");
+const errorHandler = require("../middlewares/error-handler")
 
 const ClothingItem = require("../models/clothingItem");
 
@@ -19,7 +16,7 @@ const createItem = async (req, res, next) => {
     const item = await ClothingItem.create({ name, weather, imageUrl, owner });
     return res.status(201).send({ data: item });
   } catch (err) {
-    next(err);
+    errorHandler(err, next);
   }
 };
 
@@ -41,14 +38,12 @@ const deleteItem = (req, res, next) => {
       if (String(item.owner) !== req?.user?._id) {
         throw new ForbiddenError("Access to the resource is forbidden");
       }
-      return item
-        .deleteOne()
-        .then(() =>
-          res.status(200).send({ message: "Item deleted successfully" })
-        );
+      return item.deleteOne().then(() =>
+        res.status(200).send({ message: "Item deleted successfully" })
+      );
     })
     .catch((err) => {
-      next(err); // Pass the error to the centralized handler
+      errorHandler(err, next);
     });
 };
 
@@ -60,7 +55,7 @@ const likeItem = (req, res, next) => {
   )
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      next(err); // Pass the error to the centralized handler
+      errorHandler(err, next);
     });
 };
 
@@ -73,7 +68,7 @@ const unlikeItem = (req, res, next) => {
     .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      next(err);
+      errorHandler(err, next);
     });
 };
 

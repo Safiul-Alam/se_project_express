@@ -11,6 +11,8 @@ const BadRequestError = require("../errors/bad-request");
 const ConflictError = require("../errors/duplicate-item");
 const ServerError = require("../errors/server_error");
 
+const errorHandler = require('../middlewares/error-handler');
+
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
@@ -39,7 +41,7 @@ const createUser = (req, res, next) => {
       res.status(201).json(userWithoutPassword);
     })
     .catch((err) => {
-      next(err); // Pass the error to the centralized handler
+      errorHandler(err, next)
     });
 };
 
@@ -62,7 +64,7 @@ const login = (req, res, next) => {
       res.send({ token });
     })
     .catch((err) => {
-      next(err);
+      errorHandler(err, next);
     });
 };
 
@@ -103,7 +105,7 @@ const updateProfile = (req, res, next) => {
     .orFail()
     .then((user) => res.send({ name: user.name, avatar: user.avatar }))
     .catch((err) => {
-      next(err); // Pass the error to the centralized handler
+      errorHandler(err, next);
     });
 };
 

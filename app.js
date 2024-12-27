@@ -6,7 +6,7 @@ const cors = require("cors");
 const { errors } = require("celebrate");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 const mainRouter = require("./routes/index");
-const { errorHandler, errorSender } = require("./middlewares/error-handler");
+const { errorSender } = require("./middlewares/error-handler");
 
 const app = express();
 const { PORT = 3001 } = process.env;

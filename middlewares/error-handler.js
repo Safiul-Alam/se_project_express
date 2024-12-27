@@ -12,7 +12,7 @@ const {
   badTokenErrorMessage,
 } = require("../utils/errors-messages-statuses");
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, next) => {
   console.error(err);
 
   if (err.code === 11000) {
@@ -31,7 +31,7 @@ const errorHandler = (err, req, res, next) => {
     case "Forbidden":
       return next(new ForbiddenError(forbiddenErrorMessage));
     default:
-      return res.status(500).send({ message: 'Server error occurred' });
+      return next(err);
   }
 };
 
