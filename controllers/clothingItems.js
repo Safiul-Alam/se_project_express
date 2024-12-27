@@ -1,6 +1,6 @@
 const BadRequestError = require("../errors/bad-request");
 const ForbiddenError = require("../errors/forbidden");
-const { errorHandler }= require("../middlewares/error-handler")
+const { errorHandler } = require("../middlewares/error-handler")
 
 const ClothingItem = require("../models/clothingItem");
 
@@ -16,7 +16,7 @@ const createItem = async (req, res, next) => {
     const item = await ClothingItem.create({ name, weather, imageUrl, owner });
     return res.status(201).send({ data: item });
   } catch (err) {
-    errorHandler(err, next);
+   return errorHandler(err, next);
   }
 };
 
