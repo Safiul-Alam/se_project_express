@@ -1,6 +1,6 @@
 const BadRequestError = require("../errors/bad-request");
 const ForbiddenError = require("../errors/forbidden");
-const errorHandler = require("../middlewares/error-handler")
+const { errorHandler }= require("../middlewares/error-handler")
 
 const ClothingItem = require("../models/clothingItem");
 

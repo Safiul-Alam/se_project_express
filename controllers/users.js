@@ -5,19 +5,20 @@ const validator = require("validator");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
-
 const NotFoundError = require("../errors/not-found");
 const BadRequestError = require("../errors/bad-request");
 const ConflictError = require("../errors/duplicate-item");
 const ServerError = require("../errors/server_error");
 
-const errorHandler = require('../middlewares/error-handler');
+const { errorHandler } = require("../middlewares/error-handler");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   if (!email || !password) {
-    return next(new BadRequestError("The email and password fields are required"));
+    return next(
+      new BadRequestError("The email and password fields are required")
+    );
   }
 
   User.findOne({ email })
@@ -41,7 +42,7 @@ const createUser = (req, res, next) => {
       res.status(201).json(userWithoutPassword);
     })
     .catch((err) => {
-      errorHandler(err, next)
+      errorHandler(err, next);
     });
 };
 
@@ -49,7 +50,9 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return next(new BadRequestError("The email and password fields are required"));
+    return next(
+      new BadRequestError("The email and password fields are required")
+    );
   }
 
   if (!validator.isEmail(email)) {
@@ -87,7 +90,9 @@ const getCurrentUser = (req, res, next) => {
         return next(new NotFoundError("User not found"));
       }
       if (err.name === "CastError") {
-        return next(new BadRequestError("The email and password fields are required"));
+        return next(
+          new BadRequestError("The email and password fields are required")
+        );
       }
 
       return next(new ServerError("Server error"));
