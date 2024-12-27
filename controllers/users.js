@@ -21,7 +21,7 @@ const createUser = (req, res, next) => {
     );
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .then((user) => {
       if (user) {
         throw new ConflictError("The user already exists");
@@ -59,7 +59,7 @@ const login = (req, res, next) => {
     return next(new BadRequestError("Invalid email format"));
   }
 
-  User.findUserByCredentials(email, password)
+   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
