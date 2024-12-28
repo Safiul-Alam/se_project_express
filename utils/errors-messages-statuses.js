@@ -11,4 +11,5 @@ module.exports = {
   defaultErrorMessage: "An error has occurred on the server",
   rateLimitReachedMessage:
     "Request limit exceeded, please wait before trying again",
+  documentNotFound: "Document not found",
 };

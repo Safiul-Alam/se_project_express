@@ -5,12 +5,13 @@ const ForbiddenError = require("../errors/forbidden");
 const {
   castErrorMessage,
   validationErrorMessage,
-  signinFailErrorMessage,
+  documentNotFound,
   duplicateEmailErrorMessage,
   defaultErrorMessage,
   forbiddenErrorMessage,
   badTokenErrorMessage,
 } = require("../utils/errors-messages-statuses");
+const NotFoundError = require("../errors/not-found");
 
 const errorHandler = (err, next) => {
   console.error(err);
@@ -24,12 +25,12 @@ const errorHandler = (err, next) => {
       return next(new BadRequestError(castErrorMessage));
     case "ValidationError":
       return next(new BadRequestError(validationErrorMessage));
-    case "SignInFail":
-      return next(new AuthenticationError(signinFailErrorMessage));
-    case "Unauthorized":
+    case "AuthenticationError":
       return next(new AuthenticationError(badTokenErrorMessage));
     case "Forbidden":
       return next(new ForbiddenError(forbiddenErrorMessage));
+    case "DocumentNotFoundError":
+      return next(new NotFoundError(documentNotFound))
     default:
       return next(err);
   }

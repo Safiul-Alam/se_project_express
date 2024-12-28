@@ -1,6 +1,6 @@
 const BadRequestError = require("../errors/bad-request");
 const ForbiddenError = require("../errors/forbidden");
-const { errorHandler } = require("../middlewares/error-handler")
+const { errorHandler } = require("../middlewares/error-handler");
 
 const ClothingItem = require("../models/clothingItem");
 
@@ -16,7 +16,7 @@ const createItem = async (req, res, next) => {
     const item = await ClothingItem.create({ name, weather, imageUrl, owner });
     return res.status(201).send({ data: item });
   } catch (err) {
-   return errorHandler(err, next);
+    return errorHandler(err, next);
   }
 };
 
@@ -38,9 +38,11 @@ const deleteItem = (req, res, next) => {
       if (String(item.owner) !== req?.user?._id) {
         throw new ForbiddenError("Access to the resource is forbidden");
       }
-      return item.deleteOne().then(() =>
-        res.status(200).send({ message: "Item deleted successfully" })
-      );
+      return item
+        .deleteOne()
+        .then(() =>
+          res.status(200).send({ message: "Item deleted successfully" })
+        );
     })
     .catch((err) => {
       errorHandler(err, next);
@@ -53,6 +55,7 @@ const likeItem = (req, res, next) => {
     { $addToSet: { likes: req?.user?._id } },
     { new: true }
   )
+    .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       errorHandler(err, next);
